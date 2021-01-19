@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@slack/bolt": "^3.0.0"
+  }
+}
