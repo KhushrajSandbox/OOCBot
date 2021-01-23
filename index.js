@@ -1,8 +1,13 @@
-const { App } = require('@slack/bolt')
+const { App, ExpressReceiver } = require('@slack/bolt')
+
+const receiver = new ExpressReceiver({
+    signingSecret: process.env.SLACK_SIGNING_SECRET,
+    endpoints: '/slack/events'
+})
 
 const app = new App({
-    signingSecret: process.env.SLACK_SIGNING_SECRET,
-    token: process.env.SLACK_BOT_TOKEN,
+    receiver,
+    token: process.env.SLACK_BOT_TOKEN
 })
 
 const outOfContextChannelID = 'C01270P3XFV'
@@ -45,5 +50,9 @@ async function main() {
     await app.start(process.env.PORT || 3000)
     console.log('⚡️ Bolt app is running!')
 }
+
+receiver.app.get('/ping', (_, res) => {
+    res.send('Online')
+})
 
 main()
