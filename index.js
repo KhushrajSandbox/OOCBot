@@ -1,13 +1,8 @@
-const { App, ExpressReceiver } = require('@slack/bolt')
-
-const receiver = new ExpressReceiver({
-    signingSecret: process.env.SLACK_SIGNING_SECRET,
-    endpoints: '/slack/events'
-})
+const { App } = require('@slack/bolt')
 
 const app = new App({
-    receiver,
-    token: process.env.SLACK_BOT_TOKEN
+    token: process.env.SLACK_BOT_TOKEN,
+    signingSecret: process.env.SLACK_SIGNING_SECRET
 })
 
 const outOfContextChannelID = 'C01270P3XFV'
@@ -30,12 +25,7 @@ app.event('message', async ({ event, client }) => {
             channel: event.channel,
             message_ts: event.ts
         })
-
-        // console.log("OOC in channel: " + inChannel)
-        // console.log("OOC ts: " + ts)
-        // console.log("OOCer: " + outOfContexter)
-        // console.log("OOCer Message Permalink: " + response.permalink)
-
+        
         await client.chat.postMessage({
             channel: inChannel,
             text: `<@${event.attachments[0].author_id}> was OOCed by <@${outOfContexter}>! ${response.permalink}`,
@@ -50,9 +40,5 @@ async function main() {
     await app.start(process.env.PORT || 3000)
     console.log('⚡️ Bolt app is running!')
 }
-
-receiver.app.get('/ping', (_, res) => {
-    res.send('Online')
-})
 
 main()
