@@ -9,7 +9,8 @@ const outOfContextChannelID = 'C01270P3XFV'
 const outOfContextSandboxChannelID = 'C01JXGVB99U'
 
 const neverPing = [
-    'U01LBQR5Y7Q'
+    'U01LBQR5Y7Q', // Khushraj 1, for testing purposes
+    'U017EPB6LE9' // Hugo
 ]
 
 app.event('message', async ({ event, client }: any) => {
