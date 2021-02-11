@@ -34,12 +34,28 @@ app.event('message', async ({ event, client }: any) => {
         const dontPingOOCed = neverPing.includes(outOfContexted)
         const dontPingOOCer = neverPing.includes(outOfContexter)
 
+        const outOfContextedName = await (async () => {
+            const response = await client.users.info({
+                user: outOfContexted
+            })
+
+            return response.user.real_name as string
+        })()
+
+        const outOfContexterName = await (async () => {
+            const response = await client.users.info({
+                user: outOfContexter
+            })
+
+            return response.user.real_name as string
+        })()
+
         await client.chat.postMessage({
             channel: inChannel,
             text: 
-                (dontPingOOCed ? `${event.attachments[0].author_id}` : `<@${event.attachments[0].author_id}>`)
-                + `was OOCed by`
-                + (dontPingOOCer ? `${outOfContexter}` : `<@${outOfContexter}>!`)
+                (dontPingOOCed ? `${outOfContextedName}` : `<@${outOfContexted}>`)
+                + ` was OOCed by `
+                + (dontPingOOCer ? `${outOfContexterName}! ` : `<@${outOfContexter}>! `)
                 + `${response.permalink}`,
             thread_ts: ts,
             unfurl_links: false,
