@@ -1,4 +1,4 @@
-const { App } = require('@slack/bolt')
+import { App } from '@slack/bolt'
 
 const app = new App({
     token: process.env.SLACK_BOT_TOKEN,
@@ -8,7 +8,11 @@ const app = new App({
 const outOfContextChannelID = 'C01270P3XFV'
 const outOfContextSandboxChannelID = 'C01JXGVB99U'
 
-app.event('message', async ({ event, client }) => {
+const neverPing = [
+    'U01LBQR5Y7Q'
+]
+
+app.event('message', async ({ event, client }: any) => {
     if (
         (event.channel === outOfContextChannelID
             || event.channel === outOfContextSandboxChannelID)
@@ -17,18 +21,26 @@ app.event('message', async ({ event, client }) => {
 
         const messageThreadMatch = event.attachments[0].from_url.match(/thread_ts=(.*)&/)
 
-        let inChannel = event.attachments[0].channel_id
-        let ts = messageThreadMatch ? messageThreadMatch[1].slice(0, -6) + '.' + messageThreadMatch[1].slice(-6) : event.attachments[0].ts
-        let outOfContexter = event.user
+        const inChannel = event.attachments[0].channel_id
+        const ts = messageThreadMatch ? messageThreadMatch[1].slice(0, -6) + '.' + messageThreadMatch[1].slice(-6) : event.attachments[0].ts
+        const outOfContexter = event.user
+        const outOfContexted = event.attachments[0].author_id
 
         const response = await client.chat.getPermalink({
             channel: event.channel,
             message_ts: event.ts
         })
-        
+
+        const dontPingOOCed = neverPing.includes(outOfContexted)
+        const dontPingOOCer = neverPing.includes(outOfContexter)
+
         await client.chat.postMessage({
             channel: inChannel,
-            text: `<@${event.attachments[0].author_id}> was OOCed by <@${outOfContexter}>! ${response.permalink}`,
+            text: 
+                (dontPingOOCed ? `${event.attachments[0].author_id}` : `<@${event.attachments[0].author_id}>`)
+                + `was OOCed by`
+                + (dontPingOOCer ? `${outOfContexter}` : `<@${outOfContexter}>!`)
+                + `${response.permalink}`,
             thread_ts: ts,
             unfurl_links: false,
             unfurl_media: false
@@ -37,7 +49,7 @@ app.event('message', async ({ event, client }) => {
 })
 
 async function main() {
-    await app.start(process.env.PORT || 3000)
+    await app.start(process.env.PORT ? parseInt(process.env.PORT) : 3000)
     console.log('⚡️ Bolt app is running!')
 }
 
