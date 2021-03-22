@@ -1,1 +1,1 @@
-run="yarn dev"
+run="./repl.deploy --standalone yarn dev"
